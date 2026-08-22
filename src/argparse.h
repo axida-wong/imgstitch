@@ -14,6 +14,8 @@ typedef struct opts
     int cols;
     int height;
     int width;
+    char *dir;
+    char *out;
 }Opts;
 
 extern Opts options;

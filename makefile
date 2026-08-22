@@ -2,6 +2,7 @@
 
 CC=gcc
 CFLAGS=-Wall -Wextra -g -std=c23
+LIBS=tiff
 SRC_DIR=src
 OBJ_DIR=obj
 BIN_DIR=bin
@@ -13,7 +14,7 @@ TARGET=$(BIN_DIR)/imgstitch
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -l$(LIBS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
