@@ -9,12 +9,12 @@ int main(int argc, char *argv[])
     argparse(argc, argv); 
     print_args();
 
-    init_convas(options.rows, options.cols);
-    open_imgs(&imgs, options.rows, options.cols, options.dir);
+    init_imgs(&imgs, &options);
+    open_imgs(&imgs);
     
-    img_stitch(&imgs, options.rows, options.cols, options.out);    
+    TIFF *stitched = img_stitch(&imgs);    
+    TIFFClose(stitched);
 
-    close_imgs(&imgs, options.rows, options.cols);
-    free_convas();
+    close_imgs(&imgs);
     return 0;
 }

@@ -4,22 +4,26 @@
 #include <tiffio.h>
 #include "argparse.h"
 
-typedef struct canvas
+// typedef struct canvas
+// {
+//     char *body;
+//     size_t length;
+//     size_t memb_size;
+//     size_t total_size;
+// } Canvas;
+
+typedef struct imgs
 {
-    int size;
-    char *body;
-}Canvas;
+    TIFF **img_ptrs;
+    Opts opts;
+} Imgs;
 
-typedef TIFF **Imgs;
+// extern Canvas canvas;
 
-extern Canvas canvas;
-
-void open_imgs(Imgs *imgs, int rows, int cols, char const *imgdir);
-void close_imgs(Imgs *imgs, int rows, int cols);
-TIFF *get_imgs(Imgs *imgs, int cols, int a, int b);
-void init_convas(int rows, int cols);
-void free_convas();
-
-TIFF *img_stitch(Imgs *imgs, int rows, int cols, int height, int width, char *outdir);
+void init_imgs(Imgs *imgs, Opts *opts);
+void open_imgs(Imgs *imgs);
+void close_imgs(Imgs *imgs);
+TIFF *get_imgs(Imgs *imgs, int i, int j);
+TIFF *img_stitch(Imgs *imgs);
 
 #endif
