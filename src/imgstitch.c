@@ -4,16 +4,13 @@
 #include "argparse.h"
 #include "imgstitch.h"
 
-Convas convas = {0};
+Canvas canvas = {0};
 
-TIFF *get_imgs(Imgs *imgs, int a, int b)
-{
-    return *(*imgs + a * options.cols + b);
-}
+static int digit_nums(int a);
 
-void open_imgs(Imgs *imgs, char const *imgdir)
+void open_imgs(Imgs *imgs, int rows, int cols, char const *imgdir)
 {
-    *imgs = (TIFF **)malloc(options.rows * options.cols * sizeof(TIFF *));
+    *imgs = (TIFF **)malloc(rows * cols * sizeof(TIFF *));
     if (*imgs == NULL)
     {
         fprintf(stderr, "Out of memory to allocate Imgs.\n");
@@ -23,13 +20,13 @@ void open_imgs(Imgs *imgs, char const *imgdir)
     char imgpath[256];
     int cnt = 1;
 
-    for (int i = 0; i < options.rows; i++)
+    for (int i = 0; i < rows; i++)
     {
-        for (int j = 0; j < options.cols; j++)
+        for (int j = 0; j < cols; j++)
         {
-            snprintf(imgpath, 256, "%s/%d.tif", imgdir, cnt++);
-            (*imgs)[i * options.cols + j] = TIFFOpen(imgpath, "r");
-            if ((*imgs)[i * options.cols + j] == NULL)
+            snprintf(imgpath, 256, "%s/%0*d.tif", imgdir, digit_nums(rows * cols), cnt++);
+            (*imgs)[i * cols + j] = TIFFOpen(imgpath, "r");
+            if ((*imgs)[i * cols + j] == NULL)
             {
                 fprintf(stderr, "Can't open tiff file.\n");
                 exit(EXIT_FAILURE);
@@ -38,9 +35,9 @@ void open_imgs(Imgs *imgs, char const *imgdir)
     }
 }
 
-void close_imgs(Imgs *imgs)
+void close_imgs(Imgs *imgs, int rows, int cols)
 {
-    for (int i = 0; i < options.rows * options.cols; i++)
+    for (int i = 0; i < rows * cols; i++)
     {
         if ((*imgs)[i] != NULL)
             TIFFClose((*imgs)[i]);
@@ -49,19 +46,53 @@ void close_imgs(Imgs *imgs)
     free(*imgs);
 }
 
-void init_convas()
+TIFF *get_imgs(Imgs *imgs, int cols, int a, int b)
 {
-    convas.size = options.rows * options.cols;
-    convas.body = (char *)malloc(convas.size * sizeof(char ));
-    if (convas.body)
+    return *(*imgs + a * cols + b);
+}
+
+static int digit_nums(int a)
+{
+    int n = 0;
+    
+    // if a is 0, returns 1 directly
+    if (a == 0) 
+        return 1;
+
+    while (a != 0)
     {
-        fprintf(stderr, "Out of memory to allocate convas.\n");
+        a /= 10;
+        n++;
+    }
+    return n;
+}
+
+void init_canvas(int rows, int cols)
+{
+    canvas.size = rows * cols;
+    canvas.body = (char *)malloc(canvas.size * sizeof(char ));
+    if (canvas.body == NULL)
+    {
+        fprintf(stderr, "Out of memory to allocate canvas.\n");
         exit(EXIT_FAILURE);
     }
 }
 
-void free_convas()
+void free_canvas()
 {
-    if (convas.body)
-        free(convas.body);
+    if (canvas.body)
+        free(canvas.body);
+}
+
+TIFF *img_stitch(Imgs *imgs, int rows, int cols, int height, int width, char *outdir)
+{
+    char outpath[256];
+    snprintf(outpath, 256, "%s/result.tif", outdir);
+    TIFF *result = TIFFOpen(outpath, "w");
+
+    TIFFSetField(result, TIFFTAG_IMAGEWIDTH, cols * width);
+    TIFFSetField(result, TIFFTAG_IMAGELENGTH, cols * height);
+
+
+    TIFFClose(result);
 }
